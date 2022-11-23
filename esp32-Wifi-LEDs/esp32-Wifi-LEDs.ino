@@ -53,10 +53,13 @@ CRGBPalette16 myPal = Sunset_Real_gp; // Choose your palette
 int LEDBrightness; 
 int LEDPatternSpeed; 
 int LEDPatternDelay;
+enum PatternType { PAT_MOV_PALETTE, PAT_CHG_COLOR };
+PatternType patternSelected = PAT_MOV_PALETTE; // default pattern
 
 // Web page input parameters
 String slider1Value = "60";
 String slider2Value = "20";
+//String patternValue = "";
 const char* PARAM_INPUT = "value";
 
 // PWM props /LED for testing
@@ -136,16 +139,32 @@ function updateRadio2(element) {
 )rawliteral";
 
 // Replaces placeholder with button section in your web page
-String processor(const String& var){
+String processor(const String& var) {
   //Serial.println(var);
-  if (var == "SLIDER1VALUE"){
+  if (var == "SLIDER1VALUE") {
     return slider1Value;
-  } else if (var == "SLIDER2VALUE"){
+  } else if (var == "SLIDER2VALUE") {
     return slider2Value;
+  } else if (var == "RADIO1CHECKED") {
+    switch (patternSelected) {
+      case PAT_MOV_PALETTE:
+        return "checked";
+        break;
+      case PAT_CHG_COLOR:
+        return "";
+        break;
+    }
+  } else if (var == "RADIO2CHECKED") {
+    switch (patternSelected) {
+      case PAT_MOV_PALETTE:
+        return "";
+        break;
+      case PAT_CHG_COLOR:
+        return "checked";
+        break;
+    }
   }
 
-  // extend with RADIO1CHECKED??
-  
   return String();
 }
 
@@ -160,6 +179,14 @@ void processSlider2Change(int sliderVal) {
   Serial.print((String)"Speed set to "+LEDPatternSpeed);
   LEDPatternDelay = (int)map(LEDPatternSpeed, 0, 100, 400, 20);
   Serial.println((String)"  Delay set to "+LEDPatternDelay+"ms");
+}
+
+void processPatternChange(String patternVal) {
+  if (patternVal.equals("MovingPalette")) {
+    patternSelected = PAT_MOV_PALETTE;
+  } else { // if (patternVal.equals("ChangingColor")) {
+    patternSelected = PAT_CHG_COLOR;
+  }
 }
 
 // The Arduino map() function produces incorrect distribution for integers. See https://github.com/arduino/Arduino/issues/2466
@@ -187,7 +214,8 @@ void setup(){
 //  // attach the channel to the GPIO to be controlled
 //  ledcAttachPin(output, ledChannel);
 
-  processSlider1Change(slider1Value.toInt()); // process initial values to hardware
+  // process initial values to hardware
+  processSlider1Change(slider1Value.toInt());
   processSlider2Change(slider2Value.toInt());
 //  ledcWrite(ledChannel, slider1Value.toInt());
 
@@ -206,7 +234,7 @@ void setup(){
     request->send_P(200, "text/html", index_html, processor);
   });
 
-  // Send a GET request to <ESP_IP>/slider1?value=<inputMessage>
+  // Upon receiving a GET request to <ESP_IP>/slider1?value=<inputMessage>
   server.on("/slider1", HTTP_GET, [] (AsyncWebServerRequest *request) {
     String inputMessage;
     // GET input1 value on <ESP_IP>/slider1?value=<inputMessage>
@@ -222,7 +250,7 @@ void setup(){
     request->send(200, "text/plain", "OK");
   });
 
-  // Send a GET request to <ESP_IP>/slider2?value=<inputMessage>
+  // Upon receiving a GET request to <ESP_IP>/slider2?value=<inputMessage>
   server.on("/slider2", HTTP_GET, [] (AsyncWebServerRequest *request) {
     String inputMessage;
     // GET input2 value on <ESP_IP>/slider2?value=<inputMessage>
@@ -237,21 +265,50 @@ void setup(){
     Serial.println(inputMessage);
     request->send(200, "text/plain", "OK");
   });
+
+  // Upon receiving a GET request to <ESP_IP>/slider2?value=<inputMessage>
+  server.on("/pattern", HTTP_GET, [] (AsyncWebServerRequest *request) {
+    String inputMessage;
+    // GET input value on <ESP_IP>/pattern?value=<inputMessage>
+    if (request->hasParam(PARAM_INPUT)) {
+      inputMessage = request->getParam(PARAM_INPUT)->value();
+//      patternValue = inputMessage;
+      processPatternChange(inputMessage);
+    }
+    else {
+      inputMessage = "No message sent";
+    }
+    Serial.println(inputMessage);
+    request->send(200, "text/plain", "OK");
+  });
   
   // Start server
   server.begin();
 }
   
 void loop() {
-  // MOVING PALETTE EFFECT
-  //fill_palette(led array, nLEDS, startIndex, indexDelta, palette,
-  //             brightness, blendType:LINEARBLEND|NOBLEND)
-  fill_palette(leds, NUM_LEDS, paletteIndex, 255/NUM_LEDS, myPal, LEDBrightness, LINEARBLEND);
-
+  switch (patternSelected) {
+    case PAT_MOV_PALETTE:
+      // MOVING PALETTE EFFECT
+      //fill_palette(led array, nLEDS, startIndex, indexDelta, palette,
+      //             brightness, blendType:LINEARBLEND|NOBLEND)
+      fill_palette(leds, NUM_LEDS, paletteIndex, 255/NUM_LEDS, myPal, LEDBrightness, LINEARBLEND);
+      break;
+    case PAT_CHG_COLOR:
+      // CHANGE COLOR EFFECT (using palette)
+      // CRGB ColorFromPalette(const CRGBPalette16/256 &pal, uint8_t index, uint8_t brightness=255, TBlendType blendType=LINEARBLEND)
+      for (int i=0; i<NUM_LEDS; i++) {
+        leds[i] = ColorFromPalette(myPal, paletteIndex, LEDBrightness);
+      }
+      break;
+    default:
+      break;
+  }
+  
   EVERY_N_MILLISECONDS_I(patternTimer, LEDPatternDelay) {
 //    Serial.println((String)"EVERY_N_MILLISECONDS "+LEDPatternDelay);
     if (LEDPatternSpeed != 0) {
-      paletteIndex++;
+      paletteIndex++; // because index is 8-bits unsigned, it automagically resets to 0 when reaching 256
     }
   }
   patternTimer.setPeriod(LEDPatternDelay);
