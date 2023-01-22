@@ -1,19 +1,19 @@
 /*********
   Rui Santos
   Complete project details at https://RandomNerdTutorials.com/esp32-web-server-slider-pwm/
-  
+
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files.
-  
+
   The above copyright notice and this permission notice shall be included in all
   copies or substantial portions of the Software.
 *********/
 
 /*
- * RVG: augmented with different functionality:
- * added FastLED to control WS2811 LED strip
- * buttons to switch certain LED patterns (TODO)
- */
+   RVG: augmented with different functionality:
+   added FastLED to control WS2811 LED strip
+   buttons to switch certain LED patterns (TODO)
+*/
 
 // Import required WiFi libraries
 #include <WiFiConfig.h>
@@ -35,7 +35,7 @@
 
 // FastLED defines
 #define NUM_LEDS 240 // short Strip for inf mirror: 71 LEDs, long reel: 240 LEDs
-#define DATA_PIN 12 // ESP32-CAM: GPIO12/HS2_DATA3
+#define DATA_PIN 12 // ESP32-CAM: GPIO12/HS2_DATA3, ESP32: GPIO12/ADC2_4/HSPI_Q
 #define LED_TYPE WS2811
 #define COLOR_ORDER GRB
 // Gradient palette "Sunset_Real_gp", originally from
@@ -43,26 +43,27 @@
 // converted for FastLED with gammas (2.6, 2.2, 2.5)
 // Size: 28 bytes of program space.
 DEFINE_GRADIENT_PALETTE( Sunset_Real_gp ) {
-    0, 120,  0,  0,
-   22, 179, 22,  0,
-   51, 255,104,  0,
-   85, 167, 22, 18,
-  135, 100,  0,103,
-  198,  16,  0,130,
-  255,   0,  0,160};
+  0, 120,  0,  0,
+  22, 179, 22,  0,
+  51, 255, 104,  0,
+  85, 167, 22, 18,
+  135, 100,  0, 103,
+  198,  16,  0, 130,
+  255,   0,  0, 160
+};
 
 // FastLED parameters
 CRGB leds[NUM_LEDS];
 uint8_t paletteIndex = 0;
 CRGBPalette16 myPal = Sunset_Real_gp; // Choose your palette
-int LEDBrightness; 
-int LEDPatternSpeed; 
+int LEDBrightness;
+int LEDPatternSpeed;
 int LEDPatternDelay;
 enum PatternType { PAT_MOV_PALETTE, PAT_CHG_COLOR };
 PatternType patternSelected = PAT_MOV_PALETTE; // default pattern
 
 // Web page input parameters
-String slider1Value = "60";
+String slider1Value = "100";
 String slider2Value = "20";
 //String patternValue = "";
 const char* PARAM_INPUT = "value";
@@ -277,7 +278,8 @@ void setup(){
   ArduinoOTA.begin();
   
   // Print ESP Local IP Address
-  Serial.println((String)"IP address: "+WiFi.localIP());
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP().toString());
 
   // Route for root / web page
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
