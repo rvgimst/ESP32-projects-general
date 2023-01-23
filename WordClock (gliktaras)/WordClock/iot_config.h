@@ -48,7 +48,7 @@ class IotConfig {
     // Handles configuration changes.
     void handleConfigSaved_();
     // Handles after WiFi connection is established.
-    void wifiConnected_();
+    void handleWifiConnected_();
     // To connect to the NTP server and set timezone
     void connectNTP_();
     // Check if NTP connection is established
@@ -62,6 +62,8 @@ class IotConfig {
     bool needNTPConnect_ = false;
     // NTP status
     NTPState NTPState_ = NTP_Waiting;
+    // For updating NTP connection regularly
+    unsigned long lastNTPConnect_ = 0;
 
     // Configuration portal's DNS server.
     DNSServer dns_server_;
@@ -92,6 +94,11 @@ class IotConfig {
     // Daylight saving time parameter value.
     char dst_value_[IOT_CONFIG_VALUE_LENGTH];
 
+    // Configuration portal's timezone index from available options.
+    IotWebConfParameter timezone_param_;
+    // Index of the selected timezone.
+    char timezone_value_[IOT_CONFIG_VALUE_LENGTH];
+  
     // Configuration portal's appearance parameter separator.
     IotWebConfSeparator appearance_separator_;
 
