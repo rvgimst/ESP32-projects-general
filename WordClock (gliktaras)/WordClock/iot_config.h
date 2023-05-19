@@ -1,10 +1,10 @@
 #ifndef WORDCLOCK_IOT_CONFIG_H_
 #define WORDCLOCK_IOT_CONFIG_H_
 
-#include "clock.h"
+//#include "clock.h"
+#include "Display.h"
 
 #include <IotWebConf.h>
-//#include <RTClib.h>
 
 // Maximum length of a single IoT configuration value.
 #define IOT_CONFIG_VALUE_LENGTH 16
@@ -19,7 +19,8 @@ enum NTPState {NTP_Waiting, NTP_Connecting, NTP_Connected};
 class IotConfig {
   public:
     // Constructs a new IoT configuration with the provided dependencies.
-    IotConfig(WordClock* word_clock);
+//    IotConfig(WordClock* word_clock);
+    IotConfig(Display* display);
     ~IotConfig();
 
     IotConfig(const IotConfig&) = delete;
@@ -73,9 +74,9 @@ class IotConfig {
     // RTC chip interface.
 //    RTC_DS3231* rtc_ = nullptr;
     // Word clock state.
-    WordClock* word_clock_ = nullptr;
+//    WordClock* word_clock_ = nullptr;
+    Display* display_ = nullptr;
 
-// TODO RVG: add timezone parameter!!
     // Configuration portal's date and time parameter separator.
     IotWebConfSeparator datetime_separator_;
 
@@ -100,27 +101,27 @@ class IotConfig {
     char timezone_value_[IOT_CONFIG_VALUE_LENGTH];
   
     // Configuration portal's appearance parameter separator.
-    IotWebConfSeparator appearance_separator_;
+    IotWebConfSeparator display_separator_;
 
+//    // Enable AM/PM display.
+//    IotWebConfParameter show_ampm_param_;
+//    // Value of the LDR sensitivity parameter.
+//    char show_ampm_value_[IOT_CONFIG_VALUE_LENGTH];
+  
+//    // Sensitivity parameter for the LDR.
+//    IotWebConfParameter ldr_sensitivity_param_;
+//    // Value of the LDR sensitivity parameter.
+//    char ldr_sensitivity_value_[IOT_CONFIG_VALUE_LENGTH];
+  
     // Configuration portal's palette parameter definition.
     IotWebConfParameter palette_id_param_;
     // Palette parameter value.
     char palette_id_value_[IOT_CONFIG_VALUE_LENGTH];
 
-    // Configuration portal's custom palette's first color parameter definition.
-    IotWebConfParameter color_1_param_;
-    // Custom palette's first color parameter value.
-    char color_1_value_[IOT_CONFIG_VALUE_LENGTH];
-
-    // Configuration portal's custom palette's second color parameter definition.
-    IotWebConfParameter color_2_param_;
-    // Custom palette's second color parameter value.
-    char color_2_value_[IOT_CONFIG_VALUE_LENGTH];
-
-    // Configuration portal's custom palette's third color parameter definition.
-    IotWebConfParameter color_3_param_;
-    // Custom palette's third color parameter value.
-    char color_3_value_[IOT_CONFIG_VALUE_LENGTH];
+    // Configuration portal's custom palette's color parameter definition.
+    IotWebConfParameter color_param_;
+    // Custom palette's color parameter value.
+    char color_value_[IOT_CONFIG_VALUE_LENGTH];
 
     // Configuration portal's period parameter definition.
     IotWebConfParameter period_param_;
