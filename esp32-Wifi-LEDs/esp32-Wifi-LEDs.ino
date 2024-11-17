@@ -18,7 +18,7 @@
 // Import required WiFi libraries
 #include <WiFiConfig.h>
 #include <WiFi.h> // for both OTA and own functions
-#include <ESPmDNS.h>
+//#include <ESPmDNS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 
@@ -35,7 +35,7 @@
 
 // FastLED defines
 #define NUM_LEDS 240 // short Strip for inf mirror: 71 LEDs, long reel: 240 LEDs
-#define DATA_PIN 12 // ESP32-CAM: GPIO12/HS2_DATA3, ESP32: GPIO12/ADC2_4/HSPI_Q
+#define DATA_PIN 32 //12 // ESP32-CAM: GPIO12/HS2_DATA3, ESP32: GPIO12/ADC2_4/HSPI_Q
 #define LED_TYPE WS2811
 #define COLOR_ORDER GRB
 // Gradient palette "Sunset_Real_gp", originally from
@@ -52,10 +52,92 @@ DEFINE_GRADIENT_PALETTE( Sunset_Real_gp ) {
   255,   0,  0, 160
 };
 
+// Gradient palette "chile_gp", originally from
+// http://soliton.vm.bytemark.co.uk/pub/cpt-city/esri/hypsometry/sa/tn/chile.png.index.html
+// converted for FastLED with gammas (2.6, 2.2, 2.5)
+// Size: 508 bytes of program space.
+
+DEFINE_GRADIENT_PALETTE( chile_gp ) {
+    0,   1, 44,  0,
+    2,   1, 44,  0,
+    4,   2, 48,  1,
+    6,   2, 48,  1,
+    8,   5, 62,  1,
+   10,   5, 62,  1,
+   12,   8, 71,  1,
+   14,   8, 71,  1,
+   16,  13, 86,  1,
+   18,  13, 86,  1,
+   20,  17, 95,  1,
+   22,  17, 95,  1,
+   24,  27,117,  2,
+   26,  27,117,  2,
+   28,  39,135,  3,
+   30,  39,135,  3,
+   32,  47,147,  5,
+   34,  47,147,  5,
+   36,  66,169,  9,
+   38,  66,169,  9,
+   40,  78,182, 12,
+   42,  78,182, 12,
+   44, 106,213, 19,
+   46, 106,213, 19,
+   48, 137,237, 30,
+   50, 137,237, 30,
+   52, 150,255, 34,
+   54, 150,255, 34,
+   56, 167,255, 27,
+   58, 167,255, 27,
+   60, 175,255, 23,
+   62, 175,255, 23,
+   64, 194,255, 17,
+   66, 194,255, 17,
+   68, 217,255, 11,
+   70, 217,255, 11,
+  157, 177, 16,  0,
+  159, 177, 16,  0,
+  161, 167, 15,  0,
+  163, 167, 15,  0,
+  165, 157, 15,  0,
+  167, 157, 15,  0,
+  170, 148, 14,  0,
+  172, 148, 14,  0,
+  174, 137, 13,  0,
+  176, 137, 13,  0,
+  178, 128, 12,  0,
+  180, 128, 12,  0,
+  182, 125, 12,  0,
+  184, 125, 12,  0,
+  186, 112, 11,  0,
+  188, 112, 11,  0,
+  190, 104, 10,  0,
+  192, 104, 10,  0,
+  194,  97, 10,  0,
+  196,  97, 10,  0,
+  198,  90,  9,  0,
+  200,  90,  9,  0,
+  202,  86,  9,  0,
+  204,  86,  9,  0,
+  206,  92, 13,  1,
+  208,  92, 13,  1,
+  210, 109, 22,  1,
+  212, 109, 22,  1,
+  214, 112, 27,  3,
+  216, 112, 27,  3,
+  218, 128, 40,  9,
+  220, 128, 40,  9,
+  222, 137, 48, 13,
+  224, 137, 48, 13,
+  255, 152, 66, 25
+};
+
+
 // FastLED parameters
 CRGB leds[NUM_LEDS];
 uint8_t paletteIndex = 0;
-CRGBPalette16 myPal = Sunset_Real_gp; // Choose your palette
+CRGBPalette16 myPal = chile_gp;
+//CRGBPalette16 myPal = Sunset_Real_gp; // Choose your palette
+
 int LEDBrightness;
 int LEDPatternSpeed;
 int LEDPatternDelay;
